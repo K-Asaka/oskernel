@@ -1,4 +1,4 @@
-[org 10]
+[org 0]
 [bits 16]
         jmp 0x07C0:start        ; far jmpする
 
