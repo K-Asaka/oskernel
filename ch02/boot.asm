@@ -1,45 +1,38 @@
-[org 0x7C00]
-[bits 16]
-;        jmp 0x07C0:start        ; far jmpする
+[org 0]
+        jmp     07C0h:start
 
 start:
-        mov ax, cs              ; csには0x07C0が入っている
-        mov ds, ax              ; dsをcsと同じくする
+        mov     ax, cs
+        mov     ds, ax
+        mov     es, ax
 
-        mov ax, 0xB800          ; ビデオメモリのセグメントを
-        mov es, ax              ; esレジスタに入れる。
-        mov di, 0               ; 一番上の頭の部分から書く
-        mov ax, word[msgBack]   ; 書く予定のデータのアドレスを指定する
-        mov cx, 0x7FF           ; 画面全体に書くためには
-                                ; 0x7FF(10進数 2047)個のWORDが必要
-    
+        mov     ax, 0xB800
+        mov     es, ax
+        mov     di, 0
+        mov     ax, word [msgBack]
+        mov     cx, 0x7FF
 paint:
-        mov word[es:di], ax     ; ビデオメモリに書く
-        add di, 2               ; 1つのWORDを書いたら2を加える
-        dec cx                  ; 1つのWORDを書いたらCXの値を1つ引く
-        jnz paint               ; CXが0じゃないとpaintにジャンプし残りを書く
+        mov     word [es:di], ax
+        add     di, 2
+        dec     cx
+        jnz     paint
+read:
+        mov     ax, 0x1000      ; ES:BX=1000:0000
+        mov     es, ax
+        mov     bx, 0
+        mov     ah, 2           ; ディスクにあるデータをes:bxのアドレスに
+        mov     al, 1           ; 1セクタを読み込む。
+        mov     ch, 0           ; 0番目のCylinder
+        mov     cl, 2           ; 2番目のセクタから読み込み始める。
+        mov     dh, 0           ; Head=0
+        mov     dl, 0           ; Drive=0    A:ドライブ
+        int     0x13            ; Read!
 
-        mov edi, 0              ; 一番上の頭の部分に書く
-        mov byte[es:edi], 'B'   ; ビデオメモリに書く
-        inc edi                 ; 1つのBYTEを書いたら1を加える
-        mov byte[es:edi], 0x06  ; 背景色を書く
-        inc edi                 ; 1つのBYTEを書いたら1を加える
-        mov byte[es:edi], 'o'
-        inc edi
-        mov byte[es:edi], 0x06
-        inc edi
-        mov byte[es:edi], 'o'
-        inc edi
-        mov byte[es:edi], 0x06
-        inc edi
-        mov byte[es:edi], 't'
-        inc edi
-        mov byte[es:edi], 0x06
-        inc edi
+        jc      read            ; エラーになれば、やり直し。
 
-        jmp $                   ; ここで無限ループに入る
+        jmp     0x1000:0000     ; kernel.binが位置するところにジャンプする。
 
-msgBack db  '.', 0x67           ; 背景に使う文字
+msgBack db      '.', 0x67
 
-times   510-($-$$)  db  0       ; ここから509番地まで0で詰める
-        dw  0xAA55              ; 510番地に0x55、511番地に0xAAを入れる
+times   510-($-$$) db 0
+        dw      0AA55h
