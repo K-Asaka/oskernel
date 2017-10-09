@@ -1,0 +1,118 @@
+     1                                  [org 0]
+     2                                  [bits 16]
+     3                                  
+     4                                  start:
+     5 00000000 8CC8                            mov     ax, cs              ; CSには0x1000が入っている
+     6 00000002 8ED8                            mov     ds, ax
+     7 00000004 31C0                            xor     ax, ax
+     8 00000006 8ED0                            mov     ss, ax
+     9                                  
+    10 00000008 FA                              cli
+    11                                  
+    12 00000009 0F0116[7C00]                    lgdt    [gdtr]
+    13                                  
+    14 0000000E 0F20C0                          mov     eax, cr0
+    15 00000011 6683C801                        or      eax, 0x00000001
+    16 00000015 0F22C0                          mov     cr0, eax
+    17 00000018 EB00                            jmp     $+2
+    18 0000001A 90                              nop
+    19 0000001B 90                              nop
+    20                                  
+    21 0000001C 66                              db      0x66
+    22 0000001D 67                              db      0x67
+    23 0000001E EA                              db      0xEA
+    24 0000001F [25000000]                      dd      PM_Start
+    25 00000023 0800                            dw      SysCodeSelector
+    26                                  
+    27                                  ;-----
+    28                                  ; ここからProtected Mode
+    29                                  ;-----
+    30                                  [bits 32]
+    31                                  
+    32                                  PM_Start:
+    33 00000025 66BB1000                        mov     bx, SysDataSelector
+    34 00000029 8EDB                            mov     ds, bx
+    35 0000002B 8EC3                            mov     es, bx
+    36 0000002D 8EE3                            mov     fs, bx
+    37 0000002F 8EEB                            mov     gs, bx
+    38 00000031 8ED3                            mov     ss, bx
+    39                                  
+    40 00000033 31C0                            xor     eax, eax
+    41 00000035 66B81800                        mov     ax, VideoSelector
+    42 00000039 8EC0                            mov     es, ax
+    43 0000003B BF54060000                      mov     edi, 80 * 2 * 10 + 2 * 10
+    44 00000040 3E8D35[63000000]                lea     esi, [ds:msgPMode]
+    45 00000047 E802000000                      call    printf
+    46                                  
+    47 0000004C EBFE                            jmp     $
+    48                                  
+    49                                  ;-----
+    50                                  ; Sub Routines
+    51                                  ;-----
+    52                                  printf:
+    53 0000004E 50                              push    eax
+    54                                  
+    55                                  printf_loop:
+    56 0000004F 08C0                            or      al, al
+    57 00000051 740E                            jz      printf_end
+    58 00000053 8A06                            mov     al, byte [esi]
+    59 00000055 268807                          mov     byte [es:edi], al
+    60 00000058 47                              inc     edi
+    61 00000059 26C60706                        mov     byte [es:edi], 0x06
+    62 0000005D 46                              inc     esi
+    63 0000005E 47                              inc     edi
+    64 0000005F EBEE                            jmp     printf_loop
+    65                                  
+    66                                  printf_end:
+    67 00000061 58                              pop     eax
+    68 00000062 C3                              ret
+    69                                  
+    70 00000063 57652061726520696E-     msgPMode        db      "We are in Protected Mode", 0
+    70 0000006C 2050726F7465637465-
+    70 00000075 64204D6F646500     
+    71                                  
+    72                                  ;-----
+    73                                  ; GDT Table
+    74                                  ;-----
+    75                                  gdtr:
+    76 0000007C 1F00                            dw      gdt_end - gdt - 1       ; GDTのlimit
+    77 0000007E [82000100]                      dd      gdt + 0x10000           ; GDTのベースアドレス
+    78                                  
+    79                                  gdt:
+    80 00000082 0000                            dw      0                       ; limit 0～15ビット
+    81 00000084 0000                            dw      0                       ; ベースアドレスの下位2バイト
+    82 00000086 00                              db      0                       ; ベースアドレスの16～23ビット
+    83 00000087 00                              db      0                       ; Type
+    84 00000088 00                              db      0                       ; limit 16～19ビット、フラグ
+    85 00000089 00                              db      0                       ; ベースアドレスの31～24ビット
+    86                                  
+    87                                  ; コードセグメント・ディスクリプタ
+    88                                  SysCodeSelector equ     0x08
+    89 0000008A FFFF                            dw      0xFFFF                  ; limit:0xFFFF
+    90 0000008C 0000                            dw      0x0000                  ; base 0～15ビット
+    91 0000008E 01                              db      0x01                    ; base 16～23ビット
+    92 0000008F 9A                              db      0x9A                    ; P:1, DPL:0, Code, non-conforming, readable
+    93 00000090 CF                              db      0xCF                    ; G:1, D:1, limit 16～19ビット:0xF
+    94 00000091 00                              db      0x00                    ; base 24～32ビット
+    95                                  
+    96                                  ; データセグメント・ディスクリプタ
+    97                                  SysDataSelector equ     0x10
+    98 00000092 FFFF                            dw      0xFFFF                  ; limit:0xFFFF
+    99 00000094 0000                            dw      0x0000                  ; base 0～15ビット
+   100 00000096 01                              db      0x01                    ; base 16～23ビット
+   101 00000097 92                              db      0x92                    ; P:1, DPL:0, data, expand-up, writable
+   102 00000098 CF                              db      0xCF                    ; G:1, D:1, limit 16～19ビット:0xF
+   103 00000099 00                              db      0x00                    ; base 24～32ビット
+   104                                  
+   105                                  ; ビデオセグメント・ディスクリプタ
+   106                                  VideoSelector   equ     0x18
+   107 0000009A FFFF                            dw      0xFFFF                  ; limit 0xFFFF
+   108 0000009C 0080                            dw      0x8000                  ; base 0～15ビット
+   109 0000009E 0B                              db      0x0B                    ; base 16～23ビット
+   110 0000009F 92                              db      0x92                    ; P:1, DPL:0, data, expand-up, writable
+   111 000000A0 40                              db      0x40                    ; G:0, D:1, limit 16～19ビット:0
+   112 000000A1 00                              db      0x00                    ; base 24～32ビット
+   113                                  
+   114                                  gdt_end:
+   115                                  ;-----
+   116                                  ;-----
