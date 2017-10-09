@@ -1,6 +1,6 @@
-[org 0]
+[org 0x7C00]
 [bits 16]
-        jmp 0x07C0:start        ; far jmpする
+;        jmp 0x07C0:start        ; far jmpする
 
 start:
         mov ax, cs              ; csには0x07C0が入っている
