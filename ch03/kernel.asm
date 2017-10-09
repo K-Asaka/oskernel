@@ -27,7 +27,7 @@ start:
 ;-----
 ; ここからProtected Mode
 ;-----
-[bit 32]
+[bits 32]
 
 PM_Start:
         mov     bx, SysDataSelector
@@ -84,7 +84,7 @@ gdt:
         db      0                       ; limit 16～19ビット、フラグ
         db      0                       ; ベースアドレスの31～24ビット
 
-； コードセグメント・ディスクリプタ
+; コードセグメント・ディスクリプタ
 SysCodeSelector equ     0x08
         dw      0xFFFF                  ; limit:0xFFFF
         dw      0x0000                  ; base 0～15ビット
