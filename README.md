@@ -22,3 +22,10 @@ padは環境に合わせ、パスを指定して作成する。
 先頭にアセンブルしたブートコードを結合して、ブート用のvfdを作成。
 
 `cat [対象ファイル] pad > boot.vfd`
+
+
+***
+Chapter02からはkernel.bin分の容量も減らしてkpadという調整用のファイルを準備した。
+
+`dd if=/dev/zero of=./kpad bs=5 count=294793 seek=0`
+
