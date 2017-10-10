@@ -1,0 +1,14 @@
+     1                                  [org 0]
+     2                                  [bits 16]
+     3                                  
+     4 00000000 8B04                            mov     ax, [si]
+     5 00000002 668B04                          mov     eax, [si]
+     6 00000005 678B06                          mov     ax, [esi]
+     7 00000008 66678B06                        mov     eax, [esi]
+     8                                  
+     9                                  [bits 32]
+    10                                  
+    11 0000000C 66678B04                        mov     ax, [si]
+    12 00000010 678B04                          mov     eax, [si]
+    13 00000013 668B06                          mov     ax, [esi]
+    14 00000016 8B06                            mov     eax, [esi]
