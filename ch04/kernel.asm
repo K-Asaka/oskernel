@@ -37,6 +37,7 @@ loop_idt:
         sti
         int     0x77
         jmp     $
+
 ;-----
 ; Subroutines
 ;-----
@@ -45,6 +46,7 @@ printf:
         push    es
         mov     ax, VideoSelector
         mov     es, ax
+
 printf_loop:
         mov     al, byte [esi]
         mov     byte [es:edi], al
@@ -64,9 +66,9 @@ printf_end:
 ;-----
 ; Data Area
 ;-----
-msgPMode        db      "We are in Protected Mode", 0
-msg_isr_ignore  db  "This is an ignorable interrupt", 0
-msg_isr_32_timer    db  ".This is the timer interrupt", 0
+msgPMode            db      "We are in Protected Mode", 0
+msg_isr_ignore      db      "This is an ignorable interrupt", 0
+msg_isr_32_timer    db      ".This is the timer interrupt", 0
 
 ;-----
 ; Interrupt Service Routines
@@ -74,6 +76,7 @@ msg_isr_32_timer    db  ".This is the timer interrupt", 0
 isr_ignore:
         push    gs
         push    fs
+        push    es
         push    ds
         pushad
         pushfd
