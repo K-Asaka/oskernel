@@ -24,7 +24,7 @@ PM_Start:
         mov     ax, 256                 ; IDT領域に256個の空きディスクリプタをコピーする
         mov     edi, 0
 
-loop_idr:
+loop_idt:
         lea     esi, [idt_ignore]
         mov     cx, 8                   ; ディスクリプタ1個は8バイトである
         rep     movsb
