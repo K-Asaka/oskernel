@@ -91,7 +91,7 @@ process2:
         mov     edi, 80 * 2 * 7
         lea     esi, [msg_process2]
         call    printf
-        jmp     TSS1Selector
+        jmp     TSS1Selector:0
 
 ;*****
 ; Data Area
